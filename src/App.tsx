@@ -2,6 +2,7 @@ import { CanvasView } from "./components/CanvasView";
 import { Toolbar } from "./components/Toolbar";
 import { PropertiesPanel } from "./components/PropertiesPanel";
 import { SceneList } from "./components/SceneList";
+import { Timeline } from "./components/Timeline";
 import "./App.css";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <SceneList />
         </aside>
       </div>
+      <Timeline />
     </div>
   );
 }

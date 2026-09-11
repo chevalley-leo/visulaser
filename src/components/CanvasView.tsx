@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "../store";
 import { canvasToWorld, worldToCanvas } from "../coords";
+import { evaluateObjectAtTime } from "../animation";
 import {
   createCircleObject,
   createLineObject,
@@ -22,6 +23,7 @@ export function CanvasView() {
   const scene = useStore((s) => s.scene);
   const selectedId = useStore((s) => s.selectedId);
   const tool = useStore((s) => s.tool);
+  const currentTime = useStore((s) => s.currentTime);
   const addObject = useStore((s) => s.addObject);
   const updateObject = useStore((s) => s.updateObject);
   const selectObject = useStore((s) => s.selectObject);
@@ -91,8 +93,11 @@ export function CanvasView() {
 
     for (const obj of scene.objects) {
       if (!obj.visible) continue;
-      const pts = getWorldPoints(obj).map((p) => worldToCanvas(p, w, h));
-      drawPath(ctx, pts, obj.closed, obj.color, obj.intensity, obj.id === selectedId);
+      // ponytail: editing (drag/properties) always targets the rest-pose values on `obj`,
+      // only the drawn position is animated — fine until we need to nudge a moving object mid-scrub.
+      const animated = evaluateObjectAtTime(obj, currentTime);
+      const pts = getWorldPoints(animated).map((p) => worldToCanvas(p, w, h));
+      drawPath(ctx, pts, animated.closed, animated.color, animated.intensity, obj.id === selectedId);
     }
 
     if (dragStart && dragEnd && tool !== "polygon") {
