@@ -1,0 +1,53 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font: 14px/1.4 system-ui, "Segoe UI", Roboto, sans-serif;
+  background: #111;
+  color: #ddd;
+}
+
+button {
+  font: inherit;
+  background: #222;
+  color: #ddd;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2a2a2a;
+}
+
+button.active {
+  background: #0a6ebd;
+  border-color: #0a6ebd;
+  color: #fff;
+}
+
+button.danger {
+  border-color: #a33;
+  color: #f88;
+}
+
+input[type="text"],
+input[type="number"] {
+  font: inherit;
+  background: #1a1a1a;
+  color: #ddd;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 4px 6px;
+  width: 100%;
+}
