@@ -23,7 +23,7 @@ Pipeline cible (stable depuis la Phase 1) :
 Éditeur canvas : formes (point/line/rect/circle/polygon), transform, RGB,
 scènes, save/load JSON, export Electron `.exe`.
 
-## Phase 2 — Animation (en cours)
+## Phase 2 — Animation ✅
 
 - `LaserObject.tracks` : keyframes par propriété (`{time, value}[]`),
   interpolation linéaire.
@@ -37,7 +37,7 @@ scènes, save/load JSON, export Electron `.exe`.
   Play/Pause/Stop/Loop), ajout de keyframe au playhead depuis
   `PropertiesPanel`, panneau LFO par propriété.
 
-## Phase 3 — Beam Engine
+## Phase 3 — Beam Engine ✅
 
 - `src/generators/beams.ts` : `fan`, `sweep`, `radial`, `tunnel`,
   `spiralBeam` — chacun `(params) → LaserObject[]` (des lignes/segments
@@ -45,10 +45,15 @@ scènes, save/load JSON, export Electron `.exe`.
 - Panneau "Beam Generator" avec les paramètres du cahier des charges
   (nombre de faisceaux, angle, vitesse, rotation, couleur...) et bouton
   Generate qui insère les objets dans la scène (éditables ensuite).
-- Mode preview "Beam" dans `CanvasView` (glow plus marqué, simule la brume)
-  en plus du mode "2D" existant.
+- Mode preview "Beam" dans `CanvasView` (cône glow additif par segment,
+  simule la brume) en plus du mode "2D" existant.
+- `src/camera3d.ts` : caméra perspective fixe "public dans la foule" —
+  "Beam" projette désormais avec un vrai point de vue 3D (faisceaux du
+  fixture (z proche) vers l'écran lointain (z loin)), plutôt que la
+  même projection vue-de-dessus que "2D". "2D"/"ILDA" restent en
+  projection plate (plan de travail).
 
-## Phase 4 — Procedural Engine
+## Phase 4 — Procedural Engine ✅
 
 - Extension de `src/shapes.ts` : polygones/étoiles radiaux avec variation
   de rayon, symétrie, distortion, bruit.
@@ -81,14 +86,17 @@ scènes, save/load JSON, export Electron `.exe`.
   palette/complexité cohérentes, pour un show qui ne boucle jamais à
   l'identique.
 
-## Phase 7 — Laser Renderer
+## Phase 7 — Laser Renderer ✅
 
 - `src/render/toLaserPoints.ts` : `Scene` + temps → `LaserPoint[]`
   (`x, y, r, g, b, intensity, blanking`).
 - Interpolation/résample selon vitesse de scan cible, blanking entre
-  objets, optimisation de trajectoire (tri par proximité).
-- Le mode preview utilise ce même pipeline pour valider avant sortie
-  matérielle (pas de simulation séparée).
+  objets, optimisation de trajectoire (tri par proximité, greedy
+  nearest-neighbor).
+- Nouveau mode preview "ILDA" dans `CanvasView` : dessine directement la
+  sortie de `toLaserPoints` (segments allumés + trajets blanked en
+  pointillés + compteur de points), donc ce qu'on valide à l'écran est
+  le pipeline réel, pas une simulation séparée.
 
 ## Phase 8 — Sortie ILDA
 

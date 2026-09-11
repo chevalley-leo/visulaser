@@ -14,6 +14,8 @@ const TOOLS: { id: Tool; label: string }[] = [
 export function Toolbar() {
   const tool = useStore((s) => s.tool);
   const setTool = useStore((s) => s.setTool);
+  const previewMode = useStore((s) => s.previewMode);
+  const setPreviewMode = useStore((s) => s.setPreviewMode);
   const scene = useStore((s) => s.scene);
   const newScene = useStore((s) => s.newScene);
   const setScene = useStore((s) => s.setScene);
@@ -31,6 +33,17 @@ export function Toolbar() {
             {t.label}
           </button>
         ))}
+      </div>
+      <div className="toolbar-group">
+        <button className={previewMode === "2d" ? "active" : ""} onClick={() => setPreviewMode("2d")}>
+          2D Preview
+        </button>
+        <button className={previewMode === "beam" ? "active" : ""} onClick={() => setPreviewMode("beam")}>
+          Beam Preview
+        </button>
+        <button className={previewMode === "ilda" ? "active" : ""} onClick={() => setPreviewMode("ilda")}>
+          ILDA Preview
+        </button>
       </div>
       <div className="toolbar-group">
         <button onClick={newScene}>New</button>

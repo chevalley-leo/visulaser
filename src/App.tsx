@@ -1,6 +1,8 @@
 import { CanvasView } from "./components/CanvasView";
 import { Toolbar } from "./components/Toolbar";
 import { PropertiesPanel } from "./components/PropertiesPanel";
+import { ElementGenerator } from "./components/ElementGenerator";
+import { SceneGenerator } from "./components/SceneGenerator";
 import { SceneList } from "./components/SceneList";
 import { Timeline } from "./components/Timeline";
 import "./App.css";
@@ -18,6 +20,8 @@ function App() {
         </main>
         <aside className="right-panel">
           <PropertiesPanel />
+          <ElementGenerator />
+          <SceneGenerator />
           <SceneList />
         </aside>
       </div>

@@ -1,14 +1,6 @@
 import { useStore } from "../store";
+import { hexToRgb, rgbToHex } from "../color";
 import type { AnimatableProp, LaserObject, LFOType } from "../types";
-
-function rgbToHex(r: number, g: number, b: number) {
-  return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-}
-
-function hexToRgb(hex: string) {
-  const n = parseInt(hex.slice(1), 16);
-  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-}
 
 const LFO_TYPES: LFOType[] = ["sine", "triangle", "square", "saw", "noise"];
 
@@ -157,7 +149,7 @@ export function PropertiesPanel() {
         Color
         <input
           type="color"
-          value={rgbToHex(obj.color.r, obj.color.g, obj.color.b)}
+          value={rgbToHex(obj.color)}
           onChange={(e) => updateObject(obj.id, { color: hexToRgb(e.target.value) })}
         />
       </label>

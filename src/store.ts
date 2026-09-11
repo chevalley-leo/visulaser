@@ -25,10 +25,12 @@ interface StoreState {
   scene: Scene;
   selectedId: string | null;
   tool: Tool;
+  previewMode: "2d" | "beam" | "ilda";
   currentTime: number;
   isPlaying: boolean;
   isLooping: boolean;
   setTool: (tool: Tool) => void;
+  setPreviewMode: (mode: "2d" | "beam" | "ilda") => void;
   addObject: (obj: LaserObject) => void;
   updateObject: (id: string, partial: Partial<LaserObject>) => void;
   removeObject: (id: string) => void;
@@ -52,10 +54,12 @@ export const useStore = create<StoreState>((set, get) => ({
   scene: loadFromStorage(),
   selectedId: null,
   tool: "select",
+  previewMode: "2d",
   currentTime: 0,
   isPlaying: false,
   isLooping: true,
   setTool: (tool) => set({ tool }),
+  setPreviewMode: (previewMode) => set({ previewMode }),
   addObject: (obj) =>
     set((s) => ({ scene: { ...s.scene, objects: [...s.scene.objects, obj] }, selectedId: obj.id })),
   updateObject: (id, partial) =>

@@ -1,4 +1,5 @@
-import type { LaserObject, Point, ShapeType } from "./types";
+import { noise2D } from "./noise";
+import type { LaserObject, Point, RGB, ShapeType } from "./types";
 
 export function makeId(): string {
   return crypto.randomUUID();
@@ -6,6 +7,17 @@ export function makeId(): string {
 
 export function defaultColor() {
   return { r: 0, g: 255, b: 80 };
+}
+
+// Tags every object a multi-object generator produced with a shared group so
+// panels (SceneList, Timeline) can collapse them into one row.
+export function tagGroup(objs: LaserObject[], groupName: string): LaserObject[] {
+  const groupId = makeId();
+  for (const o of objs) {
+    o.groupId = groupId;
+    o.groupName = groupName;
+  }
+  return objs;
 }
 
 // Applies rotation + scale (no translation) to a local point.
@@ -26,7 +38,7 @@ export function getWorldPoints(obj: LaserObject): Point[] {
   });
 }
 
-function circlePoints(segments = 48): Point[] {
+export function circlePoints(segments = 48): Point[] {
   const pts: Point[] = [];
   for (let i = 0; i < segments; i++) {
     const a = (i / segments) * Math.PI * 2;
@@ -140,6 +152,57 @@ export function createPolygonObject(worldPts: Point[]): LaserObject {
   };
 }
 
+export interface RadialShapeParams {
+  points: number; // vertex count (petals/spikes for a star, segment count for a smooth blob)
+  radius: number;
+  innerRatio?: number; // 0..1, alternates spikes with a shorter inner radius (star look); omit for a plain polygon
+  symmetry?: number; // how many distortion lobes go around the shape; defaults to `points`
+  distortion?: number; // 0..1, noise-driven radius wobble
+  seed?: number;
+  rotation?: number; // deg
+}
+
+// Radial vertex ring, optionally alternating in/out (star) and/or noise-distorted (organic blob).
+// Distortion samples noise on a circle of the given frequency so the shape always closes seamlessly.
+export function radialShapePoints(p: RadialShapeParams): Point[] {
+  const hasInner = p.innerRatio !== undefined;
+  const n = Math.max(3, p.points) * (hasInner ? 2 : 1);
+  const rotRad = ((p.rotation ?? 0) * Math.PI) / 180;
+  const freq = p.symmetry ?? p.points;
+  const distortion = p.distortion ?? 0;
+  const seed = p.seed ?? 0;
+  return Array.from({ length: n }, (_, i) => {
+    const angle = (i / n) * Math.PI * 2 + rotRad;
+    let r = hasInner && i % 2 === 1 ? p.radius * p.innerRatio! : p.radius;
+    if (distortion) {
+      r *= 1 + distortion * noise2D(Math.cos(angle * freq) * 2, Math.sin(angle * freq) * 2, seed);
+    }
+    return { x: Math.cos(angle) * r, y: Math.sin(angle) * r };
+  });
+}
+
+export function createRadialShapeObject(
+  center: Point,
+  edge: Point,
+  params: Omit<RadialShapeParams, "radius"> & { color?: RGB; intensity?: number },
+): LaserObject {
+  const radius = Math.hypot(edge.x - center.x, edge.y - center.y) || 0.001;
+  return {
+    id: makeId(),
+    name: params.innerRatio !== undefined ? "Star" : "Radial Shape",
+    shapeType: "polygon",
+    localPoints: radialShapePoints({ ...params, radius }),
+    closed: true,
+    x: center.x,
+    y: center.y,
+    rotation: 0,
+    scale: 1,
+    color: params.color ?? defaultColor(),
+    intensity: params.intensity ?? 1,
+    visible: true,
+  };
+}
+
 function distToSegment(p: Point, a: Point, b: Point): number {
   const abx = b.x - a.x;
   const aby = b.y - a.y;
@@ -152,8 +215,8 @@ function distToSegment(p: Point, a: Point, b: Point): number {
 
 export function hitTest(obj: LaserObject, worldPoint: Point, threshold: number): boolean {
   const pts = getWorldPoints(obj);
-  if (pts.length === 1) {
-    return Math.hypot(worldPoint.x - pts[0].x, worldPoint.y - pts[0].y) <= threshold;
+  if (pts.length === 1 || obj.shapeType === "points") {
+    return pts.some((p) => Math.hypot(worldPoint.x - p.x, worldPoint.y - p.y) <= threshold);
   }
   const count = obj.closed ? pts.length : pts.length - 1;
   for (let i = 0; i < count; i++) {
